@@ -478,3 +478,380 @@ fi
 exit 0
 
 ```
+# ZH 2022.10.yy
+# 2022.12.06
+Készítsen shell scriptet ZH.sh néven. A fájlt lássa el futási joggal.
+A kettes szint mindenkinek kötelező. Az egyes szintek tetszőletes sorrendben elkészíthetőek.
+
+## Kettes szint
+
+A program dolgozzon fel két parancssori paramétert (argumentumot). Az első argumentum egy fájl nevét, a második egy számot ad meg. A program ellenőrizze, hogy legalább két paraméter van-e megadva. Kevesebb, mint két paraméter esetén adjon hibaüzenetet és lépjen ki. Ellenőrizze, hogy az első paraméterben megadott fájl létezik-e. Ha nem, írjon ki hibaüzenetet és lépjen ki. Ha a program mindent rendben talál, akkor írja ki a megadott fájl első n sorát, ahol n a második paramétert jelöli.
+
+## Plusz egy jegy (A)
+
+A program ne csak kettő, hanem tetszőleges mennyiségű paramétert dolgozzon fel. Ekkor felváltva következik egy fájlnév, egy szám, egy fájlnév, egy szám stb. A program mindegyik fájl elejéről annyi sort írjon ki, amennyi a soron következő paraméterben meg van adva. A program ne lépjen ki egy-egy fájl hiánya esetén, csak hagyja ki a nem létező fájlt és írjon ki hibaüzenetet.
+
+## Plusz egy jegy (B)
+
+A program írja ki, hogy egy-egy fájlból valójában hány sort írt ki.
+
+## Plusz egy jegy (C)
+
+A program jelezze, ha a megadott fájlban (vagy fájlokban) nem volt annyi sor, amennyit ki kellett volna írni.
+
+## Plusz egy jegy (D)
+
+A program írja ki, hogy hány fájlt sikerült feldolgoznia.
+
+## Plusz egy jegy (E)
+
+A program írja ki, hogy összesen hány sort írt ki.
+
+## Plusz egy jegy (F)
+
+A program írja ki, hogy az általa kiírt fájldarabok összesen hány karakterből álltak.
+```bash
+#!/bin/bash
+
+# Ellenőrizzük, hogy van-e legalább két paraméter
+if [ $# -lt 2 ]; then
+    echo "Hiba: Legalább két paraméter szükséges (fájlnév és sorok száma)."
+    exit 1
+fi
+
+# Változók inicializálása
+total_files=0
+total_lines=0
+total_chars=0
+
+# Végigmegyünk a paramétereken
+while [ $# -gt 0 ]; do
+    file="$1"
+    lines="$2"
+    shift 2  # Két paramétert dolgozunk fel egyszerre
+
+    # Ellenőrizzük, hogy a fájl létezik-e
+    if [ ! -f "$file" ]; then
+        echo "Hiba: A fájl '$file' nem létezik."
+        continue
+    fi
+
+    total_files=$((total_files + 1))
+    
+    # Kiírandó sorok számlálása és karakterek összeszámolása
+    actual_lines=$(wc -l < "$file")
+    actual_chars=$(head -n "$lines" "$file" | wc -c)
+
+    echo "Fájl: $file"
+    head -n "$lines" "$file"
+
+    # Kiírt sorok száma
+    if [ "$actual_lines" -lt "$lines" ]; then
+        echo "Figyelem: A fájl '$file' csak $actual_lines sort tartalmaz."
+        lines=$actual_lines
+    fi
+
+    echo "Kiírt sorok száma: $lines"
+    
+    total_lines=$((total_lines + lines))
+    total_chars=$((total_chars + actual_chars))
+
+done
+
+# Összesítések kiírása
+echo "Feldolgozott fájlok száma: $total_files"
+echo "Összesen kiírt sorok: $total_lines"
+echo "Összesen kiírt karakterek: $total_chars"
+
+```
+
+# ZH 2022.10.xx
+# 2022.11.29
+
+Készítsen shell scriptet ZH.sh néven. A fájlt lássa el futási joggal.
+A kettes szint mindenkinek kötelező. Az egyes szintek tetszőletes sorrendben elkészíthetőek.
+
+## Kettes szint
+
+A program dolgozzon fel két parancssori paramétert (argumentumot). Az első argumentum egy könyvtár, a második egy fájl nevét adja meg. A program ellenőrizze, hogy az első paraméterben megadott könyvtár létezik-e. Ha nem, írjon ki hibaüzenetet és lépjen ki. A program ellenőrizze, hogy létezik-e a könyvtáron belül a második argumentummal megadott fájl. Ha nem, írjon ki hibaüzenetet és lépjen ki. A program írja ki, hogy ez a fájl hány sorból, illetve karakterből (vagy bájtból) áll.
+
+## Plusz egy jegy (A)
+
+A program ne csak kettő, hanem tetszőleges mennyiségű paramétert dolgozzon fel.  Ekkor az első paraméter egy könyvtár, a többi paraméter pedig fájlok nevei (a könyvtáron belül). A program ne lépjen ki egy-egy fájl hiánya esetén, csak hagyja ki a nem létező fájlt.
+
+## Plusz egy jegy (B)
+
+A program írja ki, hogy hány FÁJLT adtunk meg paraméterként.
+
+## Plusz egy jegy (C)
+
+A program írja ki, hogy hány FÁJLT sikerült feldolgozni.
+
+## Plusz egy jegy (D)
+
+A program írja ki, hogy a megvizsgált fájlok közül melyik kezdődik a shell scriptekben megfelelő kezdősorral és melyik nem.
+
+## Plusz egy jegy (E)
+
+A program írja ki, hogy melyik fájlban van a legtöbb sor, illetve írja ki magát a számot is.
+
+## Plusz egy jegy (F)
+
+A program írja ki, hogy melyik fájlban van a legtöbb karakter, illetve írja ki magát a számot is.
+
+```bash
+#!/bin/bash
+
+# Ellenőrizzük, hogy van-e legalább két paraméter
+if [ "$#" -lt 2 ]; then
+    echo "HIBA: Legalább egy könyvtárat és egy fájlt meg kell adni!"
+    exit 1
+fi
+
+directory="$1"
+shift  # Az első paraméter (könyvtár) levétele a listáról
+
+# Ellenőrizzük, hogy a könyvtár létezik-e
+if [ ! -d "$directory" ]; then
+    echo "HIBA: A megadott könyvtár nem létezik!"
+    exit 1
+fi
+
+total_files=0
+processed_files=0
+max_lines=0
+max_chars=0
+max_lines_file=""
+max_chars_file=""
+
+# Fájlok feldolgozása
+for file in "$@"; do
+    total_files=$((total_files + 1))
+    filepath="$directory/$file"
+    
+    if [ ! -f "$filepath" ]; then
+        echo "FIGYELMEZTETÉS: A fájl nem található: $file"
+        continue
+    fi
+    
+    processed_files=$((processed_files + 1))
+    line_count=$(wc -l < "$filepath")
+    char_count=$(wc -c < "$filepath")
+    echo "$file: $line_count sor, $char_count karakter"
+    
+    # Legtöbb sorral rendelkező fájl meghatározása
+    if [ "$line_count" -gt "$max_lines" ]; then
+        max_lines=$line_count
+        max_lines_file="$file"
+    fi
+    
+    # Legtöbb karakterrel rendelkező fájl meghatározása
+    if [ "$char_count" -gt "$max_chars" ]; then
+        max_chars=$char_count
+        max_chars_file="$file"
+    fi
+    
+    # Ellenőrizzük, hogy a fájl egy shell script-e
+    if grep -q "^#!/bin/bash" "$filepath"; then
+        echo "$file: SHELL SCRIPT"
+    else
+        echo "$file: NEM SHELL SCRIPT"
+    fi
+
+done
+
+echo "Összes megadott fájl: $total_files"
+echo "Feldolgozott fájlok: $processed_files"
+
+echo "Legtöbb sorral rendelkező fájl: $max_lines_file ($max_lines sor)"
+echo "Legtöbb karakterrel rendelkező fájl: $max_chars_file ($max_chars karakter)"
+
+exit 0
+
+```
+# ZH 2022.10.18.
+
+Készítsen shell scriptet `ZH.sh` néven. A fájlt lássa el futási joggal.
+
+## Kettes szint
+
+A program dolgozzon fel három parancssori paramétert (argumentumot). Minden argumentum
+egy fájl nevét adja meg. A program írja ki, hogy melyik fájl hány karakterből áll. A
+program feltételezheti, hogy mind a három paraméter meg van adva, minden megadott fájl
+létezik és olvasható, továbbá hogy azok szöveget tartalmaznak.
+
+## Plusz egy jegy (A)
+
+A program végezzen hibaellenőrzést. Ha nem 3 paramétert van megadva, tájékoztassa erről
+a felhasználót (adjon hibaüzenetet).
+
+# Plusz egy jegy (B)
+
+A program végezzen hibaellenőrzést. Ha egy fájl nem létezik, tájékoztassa erről a
+felhasználót (adjon hibaüzenetet).
+
+# Plusz egy jegy (C)
+
+A program ne csak három, hanem tetszőleges mennyiségű paramétert dolgozzon fel. Ekkor
+az “A” pontra nem kell külön figyelni.
+
+# Plusz egy jegy (D)
+
+A program írja ki, hogy összesen hány karaktert tartalmaznak a fájlok. Ebben az esetben
+ezen az egy számon kívül ne írjon ki semmit.
+
+# Plusz egy jegy (E)
+
+A program írja ki, hogy melyik fájlban van a legtöbb karakter, illetve írja ki magát a
+számot is.
+
+# Plusz egy jegy (F)
+
+A program írja ki, hogy melyik fájlban van a legkevesebb karakter, illetve írja ki magát
+a számot is.
+
+```bash
+#!/bin/bash
+
+# Ellenőrizzük, hogy legalább 1 paraméter van-e
+if [ "$#" -lt 3 ]; then
+  echo "Hiba: Legalább 3 paraméter szükséges."
+  exit 1
+fi
+
+# Inicializáljuk a változókat az összes karakter számának tárolására
+total_chars=0
+max_file=""
+max_chars=0
+min_file=""
+min_chars=-1
+
+# Paraméterek feldolgozása
+for file in "$@"; do
+  # Ellenőrizzük, hogy a fájl létezik-e
+  if [ ! -f "$file" ]; then
+    echo "Hiba: A fájl '$file' nem létezik."
+    exit 1
+  fi
+
+  # Számoljuk meg a fájlban található karakterek számát
+  char_count=$(wc -m < "$file")
+  echo "A '$file' fájl $char_count karaktert tartalmaz."
+
+  # Összeadjuk az összes karakter számát
+  total_chars=$((total_chars + char_count))
+
+  # Megkeressük a legnagyobb karakter számot
+  if [ "$char_count" -gt "$max_chars" ]; then
+    max_chars=$char_count
+    max_file="$file"
+  fi
+
+  # Megkeressük a legkisebb karakter számot
+  if [ "$min_chars" -eq -1 ] || [ "$char_count" -lt "$min_chars" ]; then
+    min_chars=$char_count
+    min_file="$file"
+  fi
+done
+
+# Kiírjuk az összesített karakter számot
+echo "Összesen $total_chars karakter található a fájlokban."
+
+# Kiírjuk, hogy melyik fájlban van a legtöbb és a legkevesebb karakter
+echo "A legtöbb karaktert a '$max_file' fájl tartalmazza: $max_chars karakter."
+echo "A legkevesebb karaktert a '$min_file' fájl tartalmazza: $min_chars karakter."
+
+```
+
+## Előkészíŧés
+
+```bash
+mcedit ZH.sh
+```
+
+Ezt követően a fájlt elmentjük (`F2`), kilépünk (`F10`) és futási jogot adunk a fájlnak:
+
+```bash
+chmod a+x ZH.sh
+```
+
+Majd visszalépünk a szövegszerkesztőbe:
+
+```bash
+mcedit ZH.sh
+```
+
+A fájl első sora a következő:
+
+```bash
+#!/bin/bash
+```
+
+## Kettes szint
+
+```bash
+wc -c $1
+wc -c $2
+wc -c $3
+```
+
+## A
+
+```bash
+if [ $# -ne 3 ]
+  then
+  echo "Nem 3 parameter van megadva."
+  exit
+  fi
+```
+
+## B
+
+Ha megelégszünk a fix 3 paraméterrel, akkor egy viszonylag fapados hibaellenőrzés
+képzelhető el.
+
+```bash
+if [ ! -f $1 ]
+  then
+  echo "Az $1 nevu file nem letezik."
+  exit
+  fi
+
+if [ ! -f $2 ]
+  then
+  echo "Az $2 nevu file nem letezik."
+  exit
+  fi
+
+if [ ! -f $3 ]
+  then
+  echo "Az $3 nevu file nem letezik."
+  exit
+  fi
+```
+
+## C
+
+```bash
+while [ $# -ne 0 ]
+  do
+    wc -c $1
+    shift
+  done
+```
+
+Ugyanez kombinálva a B-vel:
+
+```bash
+while [ $# -ne 0 ]
+  do
+    fn=$1
+    if [ ! -f $fn ]
+      then
+      echo "A $fn" nincs megadva.
+      exit
+      fi
+    wc -c $fn
+    shift
+  done
+```
