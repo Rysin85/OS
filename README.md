@@ -855,3 +855,180 @@ while [ $# -ne 0 ]
     shift
   done
 ```
+
+# Próba ZH 2025.04.30.
+
+Készítsen shell scriptet a következőkben leírt funkcionalitással pZH2.sh néven. A fájlt lássa el futási joggal.
+
+## Kettes szint
+
+A program felhasználók számára oszt ki, illetve töröl skeleton fájlokat. A skeleton fájlok a `skeleton` könyvtárban vannak (a kettes szinthez elegendő a `README` fájllal foglalkozni. A felhasználók könyvtárai a kettes szint esetén `userAA`-tól `userBB`-ig terjednek.
+
+A program 1 db parancssori paramétert (argumentumot) kezeljen, ami a **műveletet** jelöli. (Ha nem adtunk meg parancssori paramétert, vagy 1-nél többet adtunk meg, akkor adjon hibajelzést.)
+
+ * `kioszt` megadása esetén a `skeleton` könyvtárból másolja be minden felhasználóhoz a fent megnevezett fájlt.
+ * `torol` megadása esetén törölje mindenki könyvtárából ezt a fájlt.
+ * Egyéb esetben a program adjon hibajelzést és írjon ki segítő szöveget.
+
+A program mindkét esetben kérje be az `AA` és `BB` számokat a billentyűzetről.
+
+A felhasználó a program futtatása előtt hozza létre a megfelelő könyvtárakat, illetve a `skeleton` könyvtáron belül a `README` fájlt.
+
+## Plusz egy jegy (A):
+
+A program opcionálisan fogadjon még egy parancssori paramétert, ami egy felhasználói könyvtárakat tartalmazó lista. Ekkor dolgozzon ebből a listából. Ekkor a számokat nem kell bekérni.
+
+## Plusz egy jegy (B)
+
+A program ne csak a `README` fájlt másolja, hanem a `skeleton` könyvtár teljes tartalmát. A program feltételezheti, hogy a `skeleton` könyvtárban nincsenek további alkönyvtárak.
+
+## Plusz egy jegy (C)
+
+A program fogadja el az `ellenoriz` műveletet is. Ekkor ellenőrizze le, hogy a felhasználók könyvtárai léteznek-e és benne vannak-e a `skeleton` könyvtárban levő fájlok. A fájlok tartalmával nem kell foglalkozni.
+
+## Plusz egy jegy (D)
+
+A program fogadja el az `urese` műveletet is. Ekkor ellenőrizze, hogy a felhasználók könyvtára üres-e.
+
+## Plusz egy jegy (E)
+
+A program fogadja el a `skel` műveletet is. Ekkor ellenőrizze, hogy a felhasználók könyvtárában pontosan a skeleton könyvtárban levő fájlok vannak.
+
+## Plusz egy jegy (F)
+
+```bash
+
+#!/bin/bash
+
+fmode=0
+
+if [ $# -eq 1 ]; then
+  echo "Intervallum mód"
+elif [ $# -eq 2 ]; then
+  echo "Userlista mód"
+  fmode=1
+  ulfile="$2"
+else
+  echo "Hibás paraméterek"
+  exit 1
+fi
+
+muvelet="$1"
+
+if [ "$muvelet" = "kioszt" ]; then
+  echo "Skeletonok kiosztása"
+  if [ $fmode -eq 0 ]; then
+    echo -n "Első felhasználó száma: "
+    read ettol
+    echo -n "Utolsó felhasználó száma: "
+    read eddig
+    for i in $(seq "$ettol" "$eddig"); do
+      udir=$(printf "user%02d" $i)
+      echo "User dir: $udir"
+      echo "Másolás..."
+      cp -r skeleton/* "$udir"/
+    done
+  else
+    for udir in $(cat "$ulfile"); do
+      echo "User dir: $udir"
+      cp -r skeleton/* "$udir"/
+    done
+  fi
+
+elif [ "$muvelet" = "torol" ]; then
+  echo "Skeletonok törlése"
+  if [ $fmode -eq 0 ]; then
+    echo -n "Első felhasználó száma: "
+    read ettol
+    echo -n "Utolsó felhasználó száma: "
+    read eddig
+    for i in $(seq "$ettol" "$eddig"); do
+      udir=$(printf "user%02d" $i)
+      echo "User dir: $udir"
+      echo "Törlés..."
+      rm -f "$udir/README"
+    done
+  else
+    for udir in $(cat "$ulfile"); do
+      echo "User dir: $udir"
+      rm -f "$udir/README"
+    done
+  fi
+
+elif [ "$muvelet" = "ellenoriz" ]; then
+  echo "Első felhasználó száma:"
+  read ettol
+  echo "Utolsó felhasználó száma:"
+  read eddig
+  for i in $(seq "$ettol" "$eddig"); do
+    udir=$(printf "user%02d" $i)
+    echo "Ellenőrzés: $udir"
+    if [ ! -d "$udir" ]; then
+      echo "Hiányzó könyvtár: $udir"
+      continue
+    fi
+    ok=1
+    for sfn in $(ls -1 skeleton); do
+      if [ ! -f "$udir/$sfn" ]; then
+        echo "$udir/$sfn hiányzik"
+        ok=0
+      fi
+    done
+    if [ "$ok" -eq 1 ]; then
+      echo "ok"
+    fi
+  done
+
+elif [ "$muvelet" = "urese" ]; then
+  echo "Első felhasználó száma:"
+  read ettol
+  echo "Utolsó felhasználó száma:"
+  read eddig
+  for i in $(seq "$ettol" "$eddig"); do
+    udir=$(printf "user%02d" $i)
+    echo "Üres-e: $udir"
+    if [ ! "$(ls -A "$udir" 2>/dev/null)" ]; then
+      echo "$udir üres"
+    fi
+  done
+
+else
+  echo "Hibás paraméter."
+  exit 1
+fi
+
+
+```
+ E feladat
+ ```bash
+elif [ "$muvelet" = "skel" ]; then
+  echo "Első felhasználó száma:"
+  read ettol
+  echo "Utolsó felhasználó száma:"
+  read eddig
+
+  skel_files=$(ls -1 skeleton | sort)
+
+  for i in $(seq "$ettol" "$eddig"); do
+    udir=$(printf "user%02d" $i)
+    echo "Ellenőrzés: $udir"
+
+    if [ ! -d "$udir" ]; then
+      echo "Hiányzó könyvtár: $udir"
+      continue
+    fi
+
+    user_files=$(ls -1 "$udir" 2>/dev/null | sort)
+
+    # Különbségek keresése
+    diff_output=$(diff <(echo "$skel_files") <(echo "$user_files"))
+
+    if [ -z "$diff_output" ]; then
+      echo "ok"
+    else
+      echo "Eltérés a $udir könyvtárban:"
+      echo "$diff_output"
+    fi
+  done
+
+```
